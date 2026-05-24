@@ -8,8 +8,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime
 
-GMAIL_ADDRESS  = 'phanendramurahari@gmail.com'
-GMAIL_APP_PASS = 'ramc gfjv oufk igmp'
+import os
+GMAIL_ADDRESS  = os.environ.get('GMAIL_ADDRESS', 'phanendramurahari@gmail.com')
+GMAIL_APP_PASS = os.environ.get('GMAIL_APP_PASS', 'qklq hszq fzes xyjd')
 HOSPITAL_NAME  = 'Varma Hospitals'
 HOSPITAL_PHONE = '9666399996 / 08816 227268'
 HOSPITAL_EMAIL = 'varmahospitals@gmail.com'
