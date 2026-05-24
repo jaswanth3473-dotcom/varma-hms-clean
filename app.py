@@ -15,9 +15,14 @@ app.config['SESSION_COOKIE_HTTPONLY']        = True
 app.config['SESSION_TYPE']                   = 'filesystem'
 
 # DB path — /tmp is writable on Render
-# Auto-detect Render by checking if running on /opt/render path
-IS_PROD = os.path.exists('/opt/render') or bool(os.environ.get('RENDER', ''))
-DB_PATH  = '/tmp/varma.db' if IS_PROD else os.path.join(BASE_DIR, 'varma.db')
+# Auto-detect production — Railway uses /app, Render uses /opt/render
+IS_PROD = (
+    os.path.exists('/opt/render') or
+    bool(os.environ.get('RENDER', '')) or
+    bool(os.environ.get('RAILWAY_ENVIRONMENT', '')) or
+    os.path.abspath(__file__).startswith('/app/')
+)
+DB_PATH = '/tmp/varma.db' if IS_PROD else os.path.join(BASE_DIR, 'varma.db')
 app.config['SQLALCHEMY_DATABASE_URI']        = 'sqlite:///' + DB_PATH
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -50,6 +55,7 @@ def health():
 # ── SEED DOCTORS ───────────────────────────────────────────────
 def seed_doctors():
     if Doctor.query.count() > 0:
+        print('✅ Doctors already seeded — skipping.')
         return
     doctors = [
         # Cardiology
