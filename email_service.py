@@ -36,15 +36,28 @@ def _send(to_email, subject, html, plain):
     msg['To']      = ', '.join(recipients)
     msg.attach(MIMEText(plain, 'plain'))
     msg.attach(MIMEText(html,  'html'))
+    # Try port 465 first, fallback to 587
     try:
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
             s.login(GMAIL_ADDRESS, GMAIL_APP_PASS)
             s.sendmail(GMAIL_ADDRESS, recipients, msg.as_string())
-        print(f'✅ Email sent → {recipients} | {subject}')
+        print(f'✅ Email sent via 465 → {recipients} | {subject}')
         return True, None
-    except Exception as e:
-        print(f'❌ Email error → {e}')
-        return False, str(e)
+    except Exception as e1:
+        print(f'⚠️ Port 465 failed: {e1} — trying port 587...')
+        try:
+            with smtplib.SMTP('smtp.gmail.com', 587) as s:
+                s.ehlo()
+                s.starttls()
+                s.login(GMAIL_ADDRESS, GMAIL_APP_PASS)
+                s.sendmail(GMAIL_ADDRESS, recipients, msg.as_string())
+            print(f'✅ Email sent via 587 → {recipients} | {subject}')
+            return True, None
+        except Exception as e2:
+            print(f'❌ Email failed on both ports → 465: {e1} | 587: {e2}')
+            print(f'   GMAIL_ADDRESS={GMAIL_ADDRESS}')
+            print(f'   APP_PASS set: {bool(GMAIL_APP_PASS)}')
+            return False, str(e2)
 
 def _header(subtitle=''):
     return f"""

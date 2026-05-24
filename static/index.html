@@ -2890,7 +2890,10 @@ async function markComplete(id,btn){
     const d=await r.json();
     if(d.success){
       toast('Order completed! Bill paid ✅','ok');
-      // Add portal notification for patient if we have patient_id
+      // Clear admin caches so admin sees updated status immediately
+      window._adAllAppts=null;
+      window._adRxMap=null;
+      // Add portal notification for patient
       try{
         const rx=(window._pendingRxs||[]).find(rx=>rx.id===id);
         if(rx?.patient_id){
@@ -3225,7 +3228,10 @@ async function renderPhCompleted(c){
 let _adViewBusy=false;
 function adView(view,btn){
   if(_adViewBusy)return;_adViewBusy=true;
-  setTimeout(()=>_adViewBusy=false,1000); // reset after 1s
+  setTimeout(()=>_adViewBusy=false,1000);
+  // Clear caches so data is always fresh from backend
+  window._adAllAppts=null;
+  window._adRxMap=null;
   document.querySelectorAll('#pgAdmin .sb-item').forEach(i=>i.classList.remove('act'));if(btn)btn.classList.add('act');
   const titles={overview:'Admin Dashboard',appointments:'All Appointments',patients:'Patient List',doctors:'Doctor List',ambulance:'Ambulance Management',ambRequest:'Log Ambulance Request',prescriptions:'All Prescriptions'};
   document.getElementById('adTitle').textContent=titles[view]||view;
